@@ -1,27 +1,24 @@
-# Agent Setup Configuration
+# Agent Onboarding Script
 
-This file tells an AI assistant how to configure the environment for the current teammate. 
-Fill out the configuration section below before asking the agent to start.
+This file contains the instructions for any AI agent that initializes a new team member's workspace.
 
-### 1. Configuration (Fill this out)
-- **Teammate Name/Role:** [e.g., Ankush - Scraper Team]
-- **Primary Feature Folder:** [e.g., /scraper/]
+### Instructions for the Agent:
+Do not ask the user to edit this file. **Automatically initiate the following interview flow:**
 
-### 2. Instructions for the Agent
-Based on the configuration above, please perform the following steps immediately after reading this file:
+1.  **Welcome & Identify:**
+    - Greet the team member.
+    - Ask for their: **Name**, **Role**, and **Assigned Feature Folder** (e.g., "scraper").
+    - Validate the inputs (e.g., ensure the feature folder actually exists).
 
-1.  **Identify OS & Prerequisites (Required Step 1):**
+2.  **OS & Prerequisites (If not already installed):**
     - Ask the user: "What Operating System are you using? (Windows/Mac/Linux)"
-    - Based on the response, provide direct download links for **Docker Desktop** and **Git** for their specific OS.
-    - Inform the user: "Please install these now and type 'Done' when you have finished the installation."
+    - Provide direct links to download **Docker Desktop** and **Git** for their OS.
+    - Ask the user to confirm when they have finished installation (e.g., 'Done').
 
-2.  **Environment Automation (Required Step 2 - Executed after user types 'Done'):**
-    - Once the user confirms installation, proceed with these automated tasks:
-      - **Database (.env):** Check for the `.env` file. If missing, create it using `.env.example` as a template and ask the user to input the database credentials if they haven't already.
-      - **Start Database:** Execute `docker-compose -f database/docker-compose.yml up -d`.
-      - **Initialize Database:** After the container is running and healthy, execute the `database/init.sql` script to create the tables.
-      - **Verify:** Confirm with the user that the database is running successfully.
+3.  **Automated Setup (Once confirmed):**
+    - **Branch Check:** Check if the user is on their assigned branch. If not, inform them how to switch (e.g., `git checkout feature/<assigned-feature>`).
+    - **Database (.env):** Check for the `.env` file. If missing, create it using `.env.example` as a template.
+    - **Database Container:** Prompt the user: "Would you like me to start the local database container for you?" (If yes, run `docker-compose -f database/docker-compose.yml up -d`).
+    - **Initialize Tables:** Instruct the user on how to run `init.sql` to initialize the database tables.
 
-3.  **Branch Check & Workflow:**
-    - Ensure the user is currently on their feature branch.
-    - Briefly summarize the Git workflow (Commit locally -> Push -> PR to develop-> Review).
+4.  **Workflow Confirmation:** Briefly summarize the Git workflow (Commit locally -> Push -> PR to develop) and ask if they have any questions before they begin coding.
