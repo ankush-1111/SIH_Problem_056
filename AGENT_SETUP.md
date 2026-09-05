@@ -11,9 +11,11 @@ Fill out the configuration section below before asking the agent to start.
 Based on the configuration above, please perform the following steps immediately after reading this file:
 
 1.  **Set Context:** Focus file operations primarily on the **Primary Feature Folder** defined above.
-2.  **Environment Check:**
-    - Verify that `docker-compose.yml` exists in the `/database/` folder.
-    - Ask the user if they want to start the database using `docker-compose -f database/docker-compose.yml up -d`.
-    - Check if they have created a local `.env` file based on `.env.example`.
+2.  **Manual Environment Setup (Guide the user):**
+    - **Docker:** Check if Docker Desktop is installed. If not, guide the user to download and install it from https://www.docker.com/products/docker-desktop/. Explain that this is necessary to run the database.
+    - **Database (.env):** Check if a `.env` file exists in the root directory (based on `.env.example`). If not, guide the user to create it:
+      - Create a new file named `.env`.
+      - Copy the content of `.env.example` into it.
+    - **Start Database:** Once Docker is ready, ask the user if they want to start the database using `docker-compose -f database/docker-compose.yml up -d`.
 3.  **Branch Check:** Ensure the user is currently on a branch related to their feature (e.g., `feature/...`). If not, advise them which branch to switch to.
 4.  **Workflow Confirmation:** Briefly summarize the git workflow (Commit to feature -> Push -> PR to develop) and ask if they have any questions before they begin coding.
