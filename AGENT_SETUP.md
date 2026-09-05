@@ -10,11 +10,18 @@ Fill out the configuration section below before asking the agent to start.
 ### 2. Instructions for the Agent
 Based on the configuration above, please perform the following steps immediately after reading this file:
 
-1.  **Generate Setup Checklist:**
-    Promptly generate a "Manual Setup Checklist" for the user below. Specifically include:
-    - **Manual Prerequisites:** Explicitly list installation links for Docker Desktop and Git (Explain that the user MUST install these manually).
-    - **Commands for Agent Execution:** Provide the exact CLI commands (like `.env` creation templates and `docker-compose` commands) needed to get the environment ready. 
-    - **Database Initialization:** Instruct the agent to inform the user about running the `database/init.sql` script once the container is up.
-2.  **Set Context:** Focus file operations primarily on the **Primary Feature Folder** defined above.
-3.  **Branch Check:** Ensure the user is currently on a branch related to their feature (e.g., `feature/...`). If not, advise them which branch to switch to.
-4.  **Workflow Confirmation:** Briefly summarize the git workflow (Commit to feature -> Push -> PR to develop) and ask if they have any questions before they begin coding.
+1.  **Identify OS & Prerequisites (Required Step 1):**
+    - Ask the user: "What Operating System are you using? (Windows/Mac/Linux)"
+    - Based on the response, provide direct download links for **Docker Desktop** and **Git** for their specific OS.
+    - Inform the user: "Please install these now and type 'Done' when you have finished the installation."
+
+2.  **Environment Automation (Required Step 2 - Executed after user types 'Done'):**
+    - Once the user confirms installation, proceed with these automated tasks:
+      - **Database (.env):** Check for the `.env` file. If missing, create it using `.env.example` as a template and ask the user to input the database credentials if they haven't already.
+      - **Start Database:** Execute `docker-compose -f database/docker-compose.yml up -d`.
+      - **Initialize Database:** After the container is running and healthy, execute the `database/init.sql` script to create the tables.
+      - **Verify:** Confirm with the user that the database is running successfully.
+
+3.  **Branch Check & Workflow:**
+    - Ensure the user is currently on their feature branch.
+    - Briefly summarize the Git workflow (Commit locally -> Push -> PR to develop-> Review).
