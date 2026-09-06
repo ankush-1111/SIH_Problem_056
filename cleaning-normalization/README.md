@@ -1,16 +1,30 @@
-# Cleaning & Normalization Component
+# Cleaning & Normalization Engine
 
 ## Overview
-The Cleaning & Normalization component cleans raw flight fare data and enforces schema consistency.
+This engine transforms raw airfare observations into a standardized, auditable dataset suitable for statistical analysis.
 
-## Data Architecture
-Processes raw data from staging tables and writes structured data to production tables in the `database`.
+## Core Objective
+Produce a dataset that is:
+- Correct, consistent, and comparable.
+- Traceable and auditable.
+- Statistically defensible for Airfare Price Index (APIx) construction.
 
-## Developer/Agent Onboarding
-- **Prompt Reference**: See `prompts/cleaning_agent.md`.
-- **Implementation**: Ensure data validation ensures clean, queryable data for analytic components.
-- **Connectivity**: Use the standard connection string from `database/README.md`.
+## Golden Rules
+1.  **Never modify raw data:** Keep Layer 1 (Raw) immutable.
+2.  **Traceability:** Every transformation must be explainable (rule applied + reason).
+3.  **Standardization:** Use the defined Standard Data Model. Maps to `RECORD_ID`, `TOTAL_FARE`, `CURRENCY` (INR), travel/observation dates, etc.
+4.  **No Silent Deletion:** Reject/flag records only with a documented reason.
+5.  **No Inventory of Data:** Do not invent components (base fare, fees) if missing. Use NULL.
+6.  **Deterministic:** Cleaning rules must be reproducible across time.
 
-## Automated Workflow
-- The data is cleaned and inserted into the production PostgreSQL container.
-- Once optimized, analytic engines can trigger their processing tasks.
+## Data Pipeline
+1.  **Profiling**: Profile raw data before any cleaning.
+2.  **Cleaning**: Handle missing values, deduplicate (logic-conscious), and flag invalid records (negative fares, impossible dates).
+3.  **Outlier Handling**: Flag/reject based on statistical methods (IQR/Deviation) only if truly invalid.
+4.  **Normalization**: Standardize currencies (INR), locations (IATA codes), airlines (mapping tables), and dates (YYYY-MM-DD).
+
+## Output Deliverables
+- `cleaned_dataset`
+- `analytics_ready_dataset`
+- `rejected_records` (with reasons)
+- `data_quality_report`
