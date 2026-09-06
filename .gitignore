@@ -1,2 +1,15 @@
-# Secrets
-.env
+# Ignore python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore dummy data and temporary scripts
+cleaning-normalization/raw_data_dummy.csv
+cleaning-normalization/cleaned_data_dummy.csv
+cleaning-normalization/rejected_data_dummy.csv
+cleaning-normalization/generate_dummy.py
+cleaning-normalization/test_dummy_integration.py
+
+# Ignore venv
+venv/
