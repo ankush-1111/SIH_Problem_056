@@ -1,14 +1,30 @@
 -- Create Tables
 CREATE TABLE IF NOT EXISTS Airlines (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS Routes (
     id SERIAL PRIMARY KEY,
     origin VARCHAR(100) NOT NULL,
     destination VARCHAR(100) NOT NULL,
-    weight NUMERIC(10, 4)
+    weight NUMERIC(10, 4),
+    UNIQUE(origin, destination)
+);
+
+CREATE TABLE IF NOT EXISTS fare_observations (
+    id SERIAL PRIMARY KEY,
+    source VARCHAR(100) NOT NULL,
+    origin VARCHAR(100) NOT NULL,
+    destination VARCHAR(100) NOT NULL,
+    travel_date DATE NOT NULL,
+    observation_timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+    advance_days INTEGER NOT NULL,
+    airline VARCHAR(255) NOT NULL,
+    fare_class VARCHAR(50) NOT NULL,
+    base_fare NUMERIC(12, 2) NOT NULL,
+    taxes NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    total_fare NUMERIC(12, 2) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS FareObservations (
@@ -50,3 +66,56 @@ CREATE TABLE IF NOT EXISTS BasePeriods (
     base_fare NUMERIC(15, 2),
     PRIMARY KEY (route_id, booking_window)
 );
+
+-- Trigger function to ingest data
+CREATE OR REPLACE FUNCTION ingest_fare_observation()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_route_id INTEGER;
+    v_airline_id INTEGER;
+BEGIN
+    -- Get or create route
+    INSERT INTO Routes (origin, destination)
+    VALUES (NEW.origin, NEW.destination)
+    ON CONFLICT (origin, destination) DO UPDATE SET origin = EXCLUDED.origin
+    RETURNING id INTO v_route_id;
+
+    -- Get or create airline
+    INSERT INTO Airlines (name)
+    VALUES (NEW.airline)
+    ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+    RETURNING id INTO v_airline_id;
+
+    -- Insert into FareObservations
+    INSERT INTO FareObservations (
+        route_id,
+        airline_id,
+        search_date,
+        travel_date,
+        booking_window,
+        base_fare,
+        tax,
+        total_fare,
+        fare_class,
+        source
+    )
+    VALUES (
+        v_route_id,
+        v_airline_id,
+        NEW.observation_timestamp::DATE,
+        NEW.travel_date,
+        NEW.advance_days,
+        NEW.base_fare,
+        NEW.taxes,
+        NEW.total_fare,
+        NEW.fare_class,
+        NEW.source
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_ingest_fare_observation
+AFTER INSERT ON fare_observations
+FOR EACH ROW
+EXECUTE FUNCTION ingest_fare_observation();

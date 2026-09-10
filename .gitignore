@@ -1,15 +1,30 @@
-# Ignore python cache
+
+# Environments
+.env
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-# Ignore dummy data and temporary scripts
-cleaning-normalization/raw_data_dummy.csv
-cleaning-normalization/cleaned_data_dummy.csv
-cleaning-normalization/rejected_data_dummy.csv
-cleaning-normalization/generate_dummy.py
-cleaning-normalization/test_dummy_integration.py
-
-# Ignore venv
 venv/
+.venv/
+
+# Databases
+*.db
+*.sqlite3
+
+# Logs
+scraper.log
+*.log
+
+# Temp/Dummy Data
+cleaning-normalization/*.csv
+cleaning-normalization/*.py
+five-airfare-test-sites/
+
+# System
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

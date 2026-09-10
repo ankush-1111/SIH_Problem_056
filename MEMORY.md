@@ -1,0 +1,1 @@
+- [Scraper Strategy Patterns](memory/scraper-strategy-patterns.md) — project
