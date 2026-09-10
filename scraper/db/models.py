@@ -18,7 +18,6 @@ class FareObservation(Base):
 
     id = Column(Integer, primary_key=True)
     source = Column(String, nullable=False, index=True)
-    schema_version = Column(String, nullable=False, default="1.0")
     origin = Column(String(3), nullable=False, index=True)
     destination = Column(String(3), nullable=False, index=True)
     travel_date = Column(Date, nullable=False, index=True)
@@ -42,7 +41,7 @@ class FareObservation(Base):
 
     __table_args__ = (
         UniqueConstraint(
-            "source", "schema_version", "origin", "destination", "travel_date", "advance_days",
+            "source", "origin", "destination", "travel_date", "advance_days",
             name="uq_observation_key",
         ),
     )
@@ -69,7 +68,6 @@ def get_existing_observation(session: Session, quote: FareQuote) -> FareObservat
         session.query(FareObservation)
         .filter_by(
             source=quote.source,
-            schema_version=quote.schema_version,
             origin=quote.origin,
             destination=quote.destination,
             travel_date=quote.travel_date,

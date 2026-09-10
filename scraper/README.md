@@ -116,3 +116,13 @@ pytest -q
 ```
 
 The tests currently cover dynamic window generation and core fare validation/schema behavior. Add a source-specific parser test whenever a real adapter is introduced.
+
+## Repository integration
+
+Scraped data is ingested into the database staging tables. The PostgreSQL
+container is supported for the automated workflow, and the scheduler may
+trigger a `cleaning-normalization` task after a staging status update.
+
+For repository onboarding, see `prompts/scraper_agent.md` when available. Keep
+fetching logic rate-limited, handle errors explicitly, and use the standard
+database connection configuration documented by the database component.

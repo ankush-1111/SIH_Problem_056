@@ -11,19 +11,15 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from uuid import uuid4
 
-from core.logger import get_logger
-from core.validation import is_sane_fare
-from core.retry import BlockedError, PermanentSourceError
-from core.resilience import with_retry, CircuitBreaker
 from config.sources import SOURCES
-from db.database import SessionLocal, engine, Base
-from db.models import save_fare_quote, record_job_audit
 from scheduler.job_generator import generate_todays_jobs, ScrapeJob
 from sources.example_api_source import AirlineAAdapter
 from sources.example_scrape_source import AirlineBAdapter
-from sources.jetvista_adapter import JetVistaAdapter
-from sources.flysphere_adapter import FlySphereAdapter
-from sources.airzen_adapter import AirZenAdapter
+from core.retry import BlockedError, PermanentSourceError
+from core.validation import is_sane_fare
+from core.logger import get_logger
+from db.database import engine, Base, SessionLocal
+from db.models import save_fare_quote, record_job_audit
 
 logger = get_logger("main")
 
@@ -36,31 +32,21 @@ ADAPTERS = {
         base_url=SOURCES["airline_b"].base_url,
         requests_per_minute=SOURCES["airline_b"].requests_per_minute,
     ),
-    "airline_c": JetVistaAdapter(base_url=SOURCES["airline_c"].base_url),
-    "airline_d": FlySphereAdapter(base_url=SOURCES["airline_d"].base_url),
-    "airline_e": AirZenAdapter(base_url=SOURCES["airline_e"].base_url),
 }
-
-CIRCUIT_BREAKERS = {name: CircuitBreaker() for name in ADAPTERS}
 
 
 def run_job(job: ScrapeJob, run_id: str) -> str:
     started_at = datetime.now(timezone.utc)
     adapter = ADAPTERS.get(job.source_name)
-    cb = CIRCUIT_BREAKERS.get(job.source_name)
-    if adapter is None or cb is None:
-        logger.warning(f"No adapter/cb registered for '{job.source_name}', skipping")
+    if adapter is None:
+        logger.warning(f"No adapter registered for '{job.source_name}', skipping")
         return "skipped"
 
     session = SessionLocal()
     status = "failed"
     error_message = None
     try:
-        @with_retry
-        def _collect(*args, **kwargs):
-            return adapter.collect(*args, **kwargs)
-
-        quote = cb.call(_collect, job.origin, job.destination, job.travel_date, job.advance_days)
+        quote = adapter.collect(job.origin, job.destination, job.travel_date, job.advance_days)
         if not is_sane_fare(quote):
             status = "rejected"
             return status

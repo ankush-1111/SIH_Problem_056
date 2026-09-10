@@ -17,7 +17,6 @@ class FareQuote(BaseModel):
 
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    schema_version: str = "1.0"
     source: str = Field(min_length=1)
     origin: str
     destination: str
