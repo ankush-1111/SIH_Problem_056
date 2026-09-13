@@ -31,7 +31,7 @@ class Repository:
             with conn.cursor() as cur:
                 cur.execute("SELECT id, weight FROM routes")
                 rows = cur.fetchall()
-                return [Route(r[0], float(r[1])) for r in rows]
+                return [Route(r[0], float(r[1]) if r[1] is not None else 0.0) for r in rows]
         except psycopg2.Error as e:
             raise DatabaseError(f"Failed to fetch routes: {e}")
         finally:
@@ -49,13 +49,26 @@ class Repository:
         finally:
             conn.close()
 
+    def fetch_all_fare_dates(self) -> List[str]:
+        """Fetch all distinct dates from representativefares ordered chronologically."""
+        conn = self._get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT DISTINCT date FROM representativefares ORDER BY date")
+                rows = cur.fetchall()
+                return [r[0].strftime("%Y-%m-%d") if hasattr(r[0], "strftime") else str(r[0]) for r in rows]
+        except psycopg2.Error as e:
+            raise DatabaseError(f"Failed to fetch fare dates: {e}")
+        finally:
+            conn.close()
+
     def fetch_daily_indices(self, start_date: str, end_date: str) -> list:
         """Fetch daily index values between start_date and end_date (inclusive)."""
         conn = self._get_connection()
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT daily_index FROM airfareindices WHERE date >= %s AND date <= %s AND daily_index IS NOT NULL ORDER BY date",
+                    "SELECT daily_index FROM airfareindices WHERE date >= %s AND date <= %s AND daily_index IS NOT NULL AND daily_index > 0 ORDER BY date",
                     (start_date, end_date)
                 )
                 rows = cur.fetchall()

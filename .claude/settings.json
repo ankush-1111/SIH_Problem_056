@@ -1,9 +1,0 @@
-{
-    "permissions": {
-        "bash": {
-            "allow": [
-                "C:\\Users\\ankus\\OneDrive\\Documents\\SIH\\SIH_Problem_056\\*"
-            ]
-        }
-    }
-}

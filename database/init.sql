@@ -21,10 +21,20 @@ CREATE TABLE IF NOT EXISTS fare_observations (
     observation_timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
     advance_days INTEGER NOT NULL,
     airline VARCHAR(255) NOT NULL,
+    flight_number VARCHAR(50),
     fare_class VARCHAR(50) NOT NULL,
+    cabin VARCHAR(50) NOT NULL,
+    fare_family VARCHAR(50),
+    stops INTEGER NOT NULL DEFAULT 0,
+    departure_time VARCHAR(20),
+    arrival_time VARCHAR(20),
     base_fare NUMERIC(12, 2) NOT NULL,
     taxes NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
-    total_fare NUMERIC(12, 2) NOT NULL
+    other_charges NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    total_fare NUMERIC(12, 2) NOT NULL,
+    currency VARCHAR(3) NOT NULL DEFAULT 'INR',
+    availability VARCHAR(50) NOT NULL DEFAULT 'available',
+    search_profile VARCHAR(50) NOT NULL DEFAULT 'one_way_economy_1pax'
 );
 
 CREATE TABLE IF NOT EXISTS FareObservations (
@@ -66,6 +76,29 @@ CREATE TABLE IF NOT EXISTS BasePeriods (
     base_fare NUMERIC(15, 2),
     PRIMARY KEY (route_id, booking_window)
 );
+
+CREATE TABLE IF NOT EXISTS ExternalBenchmarks (
+    id SERIAL PRIMARY KEY,
+    source_name VARCHAR(100) NOT NULL,
+    date DATE NOT NULL,
+    benchmark_value NUMERIC(10, 4) NOT NULL,
+    UNIQUE (source_name, date)
+);
+
+CREATE TABLE IF NOT EXISTS JobAudits (
+    id SERIAL PRIMARY KEY,
+    run_id VARCHAR(36) NOT NULL,
+    source VARCHAR(100) NOT NULL,
+    origin VARCHAR(3) NOT NULL,
+    destination VARCHAR(3) NOT NULL,
+    travel_date DATE NOT NULL,
+    advance_days INTEGER NOT NULL,
+    started_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    finished_at TIMESTAMP WITH TIME ZONE,
+    status VARCHAR(50) NOT NULL,
+    error_message TEXT
+);
+
 
 -- Trigger function to ingest data
 CREATE OR REPLACE FUNCTION ingest_fare_observation()
@@ -115,7 +148,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_ingest_fare_observation ON fare_observations;
 CREATE TRIGGER trg_ingest_fare_observation
 AFTER INSERT ON fare_observations
 FOR EACH ROW
 EXECUTE FUNCTION ingest_fare_observation();
+

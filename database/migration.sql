@@ -1,0 +1,10 @@
+ALTER TABLE fare_observations ADD COLUMN IF NOT EXISTS flight_number VARCHAR(50);
+ALTER TABLE fare_observations ADD COLUMN IF NOT EXISTS cabin VARCHAR(50) DEFAULT 'Economy';
+ALTER TABLE fare_observations ADD COLUMN IF NOT EXISTS fare_family VARCHAR(50);
+ALTER TABLE fare_observations ADD COLUMN IF NOT EXISTS stops INTEGER DEFAULT 0;
+ALTER TABLE fare_observations ADD COLUMN IF NOT EXISTS departure_time VARCHAR(20);
+ALTER TABLE fare_observations ADD COLUMN IF NOT EXISTS arrival_time VARCHAR(20);
+ALTER TABLE fare_observations ADD COLUMN IF NOT EXISTS other_charges NUMERIC(12, 2) DEFAULT 0.00;
+ALTER TABLE fare_observations ADD COLUMN IF NOT EXISTS currency VARCHAR(3) DEFAULT 'INR';
+ALTER TABLE fare_observations ADD COLUMN IF NOT EXISTS availability VARCHAR(50) DEFAULT 'available';
+ALTER TABLE fare_observations ADD COLUMN IF NOT EXISTS search_profile VARCHAR(50) DEFAULT 'one_way_economy_1pax';

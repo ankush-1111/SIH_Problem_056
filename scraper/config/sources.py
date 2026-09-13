@@ -50,7 +50,7 @@ SOURCES: dict[str, SourceConfig] = {
     "airline_b": SourceConfig(
         name="airline_b",
         has_official_api=False,
-        scraping_permitted=True,
+        scraping_permitted=False, # Changed to False
         base_url="https://www.example-airline-b.com",
         terms_url="",
         robots_url="",

@@ -13,7 +13,7 @@ from uuid import uuid4
 
 from config.sources import SOURCES
 from scheduler.job_generator import generate_todays_jobs, ScrapeJob
-from sources.example_api_source import AirlineAAdapter
+from sources.mock_api_source import MockAirlineAAdapter
 from sources.example_scrape_source import AirlineBAdapter
 from core.retry import BlockedError, PermanentSourceError
 from core.validation import is_sane_fare
@@ -24,7 +24,7 @@ from db.models import save_fare_quote, record_job_audit
 logger = get_logger("main")
 
 ADAPTERS = {
-    "airline_a": AirlineAAdapter(
+    "airline_a": MockAirlineAAdapter(
         base_url=SOURCES["airline_a"].base_url,
         requests_per_minute=SOURCES["airline_a"].requests_per_minute,
     ),
