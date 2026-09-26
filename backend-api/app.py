@@ -8,7 +8,9 @@ from sqlalchemy.orm import sessionmaker, Session
 from dotenv import load_dotenv
 
 load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:password123@localhost:5432/sih_db")
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL must be set in environment")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -135,7 +137,7 @@ async def get_airline_comparison(
         SELECT a.name as airline,
                ROUND(AVG(fo.total_fare)::numeric, 2)::float as representative_fare,
                true as is_synthetic
-        FROM FareObservations fo
+        FROM fare_observations fo
         JOIN Airlines a ON fo.airline_id = a.id
         JOIN Routes r ON fo.route_id = r.id
         {where_sql}
@@ -344,8 +346,8 @@ async def get_index_contributors(db: Session = Depends(get_db)):
 async def get_data_quality(db: Session = Depends(get_db)):
     """Comprehensive data quality, audit metrics, and system coverage statistics."""
     try:
-        raw_obs = db.execute(text("SELECT COUNT(*) FROM FareObservations")).scalar() or 12398
-        valid_schema = db.execute(text("SELECT COUNT(*) FROM FareObservations WHERE total_fare > 0")).scalar() or raw_obs
+        raw_obs = db.execute(text("SELECT COUNT(*) FROM fare_observations")).scalar() or 12398
+        valid_schema = db.execute(text("SELECT COUNT(*) FROM fare_observations WHERE total_fare > 0")).scalar() or raw_obs
 
         duplicates_removed = 180
         outliers_filtered = 240

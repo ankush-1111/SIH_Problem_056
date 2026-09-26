@@ -73,7 +73,7 @@ def run_tests():
     # TEST 3: Current representative fare may be ₹5067.84, but APIx must NOT be 5067.84
     cur.execute("SELECT daily_index FROM airfareindices WHERE date = '2026-10-26';")
     db_val = float(cur.fetchone()[0])
-    cur.execute("SELECT AVG(total_fare) FROM FareObservations WHERE travel_date = '2026-10-26';")
+    cur.execute("SELECT AVG(total_fare) FROM fare_observations WHERE travel_date = '2026-10-26';")
     raw_fare = float(cur.fetchone()[0])
     assert abs(raw_fare - 5067.84) < 0.1, f"Raw fare mismatch: {raw_fare}"
     assert db_val != raw_fare, f"APIx must not be raw fare: {db_val}"

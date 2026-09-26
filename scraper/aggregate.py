@@ -11,7 +11,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Connection settings
-DB_URL = os.getenv("DATABASE_URL", "postgresql://admin:password123@localhost:5432/sih_db")
+DB_URL = os.getenv("DATABASE_URL")
+if not DB_URL:
+    raise ValueError("DATABASE_URL must be set in environment")
 
 def aggregate_data():
     conn = None
@@ -45,19 +47,19 @@ def aggregate_data():
         routes = cur.fetchall()
 
         for route_id, origin, destination in routes:
-            # Note: booking_window is now advance_days in FareObservations
+            # Note: booking_window is now advance_days in fare_observations
             cur.execute("""
                 INSERT INTO RepresentativeFares (route_id, booking_window, date, median_fare)
                 SELECT
-                    %s,
-                    booking_window,
+                    route_id,
+                    advance_days,
                     travel_date,
                     PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY total_fare)
-                FROM FareObservations
+                FROM fare_observations
                 WHERE route_id = %s
-                GROUP BY booking_window, travel_date
+                GROUP BY advance_days, travel_date
                 ON CONFLICT (route_id, booking_window, date) DO NOTHING;
-            """, (route_id, route_id))
+            """, (route_id,))
 
         conn.commit()
         logger.info("Aggregation complete.")

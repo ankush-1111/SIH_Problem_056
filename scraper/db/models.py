@@ -3,7 +3,7 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from sqlalchemy import Column, Date, DateTime, Integer, Numeric, String, UniqueConstraint
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import Session
 
 from db.database import Base
@@ -38,6 +38,10 @@ class FareObservation(Base):
     currency = Column(String(3), nullable=False, default="INR")
     availability = Column(String, nullable=False, default="available")
     search_profile = Column(String, nullable=False, default="one_way_economy_1pax")
+
+    # Added columns for unification
+    route_id = Column(Integer, ForeignKey("routes.id"), nullable=True)
+    airline_id = Column(Integer, ForeignKey("airlines.id"), nullable=True)
 
     __table_args__ = (
         UniqueConstraint(

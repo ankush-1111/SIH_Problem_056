@@ -1,7 +1,10 @@
 import psycopg2
 from collections import defaultdict
 
-conn = psycopg2.connect('postgresql://admin:password123@localhost:5432/sih_db')
+db_url = os.getenv("DATABASE_URL")
+if not db_url:
+    raise ValueError("DATABASE_URL must be set in environment")
+conn = psycopg2.connect(db_url)
 cur = conn.cursor()
 
 # Get routes and weights

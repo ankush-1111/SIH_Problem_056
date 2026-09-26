@@ -1,23 +1,27 @@
 import psycopg2
+import os
 
-conn = psycopg2.connect('postgresql://admin:password123@localhost:5432/sih_db')
+db_url = os.getenv("DATABASE_URL")
+if not db_url:
+    raise ValueError("DATABASE_URL must be set in environment")
+conn = psycopg2.connect(db_url)
 cur = conn.cursor()
 
-# Check total rows in FareObservations
-cur.execute('SELECT COUNT(*) FROM FareObservations')
+# Check total rows in fare_observations
+cur.execute('SELECT COUNT(*) FROM fare_observations')
 total_fo = cur.fetchone()[0]
-print('Total rows in FareObservations:', total_fo)
+print('Total rows in fare_observations:', total_fo)
 
 # Check nulls or <= 0
-cur.execute('SELECT COUNT(*) FROM FareObservations WHERE total_fare IS NULL OR total_fare <= 0')
+cur.execute('SELECT COUNT(*) FROM fare_observations WHERE total_fare IS NULL OR total_fare <= 0')
 invalid_fares = cur.fetchone()[0]
 print('Invalid or <= 0 fares:', invalid_fares)
 
-# Check duplicate observations (same route_id, airline_id, search_date, travel_date, booking_window)
+# Check duplicate observations (same source, origin, destination, travel_date, advance_days)
 cur.execute('''
-    SELECT route_id, airline_id, search_date, travel_date, booking_window, COUNT(*) 
-    FROM FareObservations 
-    GROUP BY route_id, airline_id, search_date, travel_date, booking_window 
+    SELECT source, origin, destination, travel_date, advance_days, COUNT(*)
+    FROM fare_observations
+    GROUP BY source, origin, destination, travel_date, advance_days
     HAVING COUNT(*) > 1
 ''')
 dup_groups = cur.fetchall()
@@ -26,9 +30,9 @@ print('Number of duplicate groups:', len(dup_groups))
 # Total duplicate rows count
 cur.execute('''
     SELECT SUM(cnt - 1) FROM (
-        SELECT COUNT(*) as cnt 
-        FROM FareObservations 
-        GROUP BY route_id, airline_id, search_date, travel_date, booking_window 
+        SELECT COUNT(*) as cnt
+        FROM fare_observations
+        GROUP BY source, origin, destination, travel_date, advance_days
         HAVING COUNT(*) > 1
     ) sub
 ''')
@@ -36,20 +40,20 @@ dup_rows = cur.fetchone()[0] or 0
 print('Total redundant/duplicate observations:', dup_rows)
 
 # Outlier check: total_fare < 1500 or total_fare > 30000 (standard Indian domestic bounds)
-cur.execute('SELECT COUNT(*) FROM FareObservations WHERE total_fare < 1500 OR total_fare > 30000')
+cur.execute('SELECT COUNT(*) FROM fare_observations WHERE total_fare < 1500 OR total_fare > 30000')
 outlier_count = cur.fetchone()[0]
 print('Outliers (<1500 or >30000):', outlier_count)
 
 # Missing values in crucial fields
-cur.execute('SELECT COUNT(*) FROM FareObservations WHERE total_fare IS NULL OR base_fare IS NULL OR route_id IS NULL OR booking_window IS NULL')
+cur.execute('SELECT COUNT(*) FROM fare_observations WHERE total_fare IS NULL OR base_fare IS NULL OR travel_date IS NULL OR origin IS NULL OR destination IS NULL')
 missing_count = cur.fetchone()[0]
 print('Missing critical fields:', missing_count)
 
-# Date range in FareObservations
-cur.execute('SELECT MIN(search_date), MAX(search_date) FROM FareObservations')
-print('Search date range in FareObservations:', cur.fetchall())
-cur.execute('SELECT MIN(travel_date), MAX(travel_date) FROM FareObservations')
-print('Travel date range in FareObservations:', cur.fetchall())
+# Date range in fare_observations
+cur.execute('SELECT MIN(observation_timestamp), MAX(observation_timestamp) FROM fare_observations')
+print('Observation timestamp range in fare_observations:', cur.fetchall())
+cur.execute('SELECT MIN(travel_date), MAX(travel_date) FROM fare_observations')
+print('Travel date range in fare_observations:', cur.fetchall())
 
 
 # Check RepresentativeFares count

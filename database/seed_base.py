@@ -4,7 +4,9 @@ from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 
 load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:password123@localhost:5432/sih_db")
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL must be set in environment")
 engine = create_engine(DATABASE_URL)
 
 # Base Period: January 2026 (Base Index = 100)

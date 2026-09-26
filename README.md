@@ -107,7 +107,7 @@ Ensure your `.env` contains:
 DB_USER=admin
 DB_PASSWORD=password123
 DB_NAME=sih_db
-DATABASE_URL=postgresql://admin:password123@localhost:5432/sih_db
+DATABASE_URL=<your-postgres-connection-string>
 ```
 
 ### Step 2: Start PostgreSQL Container

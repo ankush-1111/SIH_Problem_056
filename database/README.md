@@ -17,7 +17,7 @@ Download **[DBeaver](https://dbeaver.io/)** (or pgAdmin) and connect using these
 Use the `.env` file to manage your connection string. 
 Example (SQLAlchemy):
 ```python
-DATABASE_URL = "postgresql://admin:password123@localhost:5432/sih_db"
+DATABASE_URL = "postgresql://user:password@host:port/db" # Set this to your database URL
 ```
 
 ### 3. Troubleshooting

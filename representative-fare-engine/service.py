@@ -35,18 +35,18 @@ def run_representative_fare_aggregation():
         logger.info("Starting Representative Fare aggregation...")
 
         # 1. Fetch eligible cleaned observations
-        # Groups: route_id, travel_date, booking_window, fare_class
+        # Groups: route_id, travel_date, advance_days, fare_class
         query = """
             SELECT
                 route_id,
                 travel_date,
-                booking_window,
+                advance_days as booking_window,
                 fare_class,
                 ARRAY_AGG(total_fare ORDER BY total_fare) as fare_list,
                 COUNT(*) as obs_count
-            FROM FareObservations
+            FROM fare_observations
             WHERE total_fare IS NOT NULL AND total_fare > 0
-            GROUP BY route_id, travel_date, booking_window, fare_class
+            GROUP BY route_id, travel_date, advance_days, fare_class
             HAVING COUNT(*) >= 2;
         """
         cur.execute(query)

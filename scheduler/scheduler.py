@@ -1,7 +1,7 @@
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from pytz import timezone
-from scheduler.config import TEST_MODE, TEST_INTERVAL_SECONDS, PRODUCTION_HOUR, PRODUCTION_MINUTE, TIMEZONE, DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
+from scheduler.config import TEST_MODE, TEST_INTERVAL_SECONDS, PRODUCTION_HOUR, PRODUCTION_MINUTE, TIMEZONE, DATABASE_URL
 from scheduler.logger import logger
 from scheduler.jobs import test_job, run_scraper_job, run_representative_fare_aggregation_job, run_index_engine_job
 
@@ -12,7 +12,7 @@ def start_scheduler():
 
     # Configure job store
     jobstores = {
-        'default': SQLAlchemyJobStore(url=f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}')
+        'default': SQLAlchemyJobStore(url=DATABASE_URL)
     }
 
     scheduler = BlockingScheduler(jobstores=jobstores, timezone=tz)

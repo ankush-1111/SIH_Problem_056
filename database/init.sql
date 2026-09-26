@@ -34,7 +34,9 @@ CREATE TABLE IF NOT EXISTS fare_observations (
     total_fare NUMERIC(12, 2) NOT NULL,
     currency VARCHAR(3) NOT NULL DEFAULT 'INR',
     availability VARCHAR(50) NOT NULL DEFAULT 'available',
-    search_profile VARCHAR(50) NOT NULL DEFAULT 'one_way_economy_1pax'
+    search_profile VARCHAR(50) NOT NULL DEFAULT 'one_way_economy_1pax',
+    route_id INTEGER REFERENCES Routes(id),
+    airline_id INTEGER REFERENCES Airlines(id)
 );
 
 CREATE TABLE IF NOT EXISTS FareObservations (

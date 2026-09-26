@@ -1,6 +1,9 @@
 import psycopg2
 
-conn = psycopg2.connect('postgresql://admin:password123@localhost:5432/sih_db')
+db_url = os.getenv("DATABASE_URL")
+if not db_url:
+    raise ValueError("DATABASE_URL must be set in environment")
+conn = psycopg2.connect(db_url)
 cur = conn.cursor()
 cur.execute("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'job_audits'")
 print('job_audits schema:', cur.fetchall())

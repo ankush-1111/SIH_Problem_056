@@ -9,7 +9,9 @@ project_root = os.path.abspath(os.path.join(current_dir, ".."))
 sys.path.append(os.path.join(project_root, "index-engine", "src"))
 
 load_dotenv(os.path.join(project_root, ".env"))
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:password123@localhost:5432/sih_db")
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL must be set in environment")
 
 from index_engine.repository import Repository
 from index_engine.calculator import Calculator
