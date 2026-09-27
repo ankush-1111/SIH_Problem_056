@@ -2,16 +2,13 @@ import unittest
 import psycopg2
 from datetime import date, datetime
 from decimal import Decimal
+import os
 from service import run_representative_fare_aggregation
 
 class TestBasketCoverage(unittest.TestCase):
     def setUp(self):
-        self.conn = psycopg2.connect(
-            host="localhost",
-            database="sih_db",
-            user="admin",
-            password="password123"
-        )
+        db_url = os.environ.get("DATABASE_URL")
+        self.conn = psycopg2.connect(db_url)
         self.cur = self.conn.cursor()
         # Clean state
         self.cur.execute("DELETE FROM RepresentativeFares; DELETE FROM fare_observations; DELETE FROM Routes; DELETE FROM Airlines;")
@@ -44,10 +41,10 @@ class TestBasketCoverage(unittest.TestCase):
             self.cur.execute("""
                 INSERT INTO fare_observations (
                     route_id, airline_id, observation_timestamp, travel_date, advance_days, base_fare, total_fare,
-                    fare_class, source, airline, origin, destination, cabin
+                    fare_class, source, airline, origin, destination, cabin, stops
                 )
-                VALUES (%s, 1, '2026-09-01 10:00:00+05:30', '2026-10-01', 7, 5000, 5200, 'Economy', 'Test', 'TestAir', %s, %s, 'Economy'),
-                       (%s, 1, '2026-09-01 10:00:00+05:30', '2026-10-01', 7, 6000, 6200, 'Economy', 'Test', 'TestAir', %s, %s, 'Economy');
+                VALUES (%s, 1, '2026-09-01 10:00:00+05:30', '2026-10-01', 7, 5000, 5200, 'Economy', 'Test', 'TestAir', %s, %s, 'Economy', 0),
+                       (%s, 1, '2026-09-01 10:00:00+05:30', '2026-10-01', 7, 6000, 6200, 'Economy', 'Test', 'TestAir', %s, %s, 'Economy', 0);
             """, (route_id, orig, dest, route_id, orig, dest))
         self.conn.commit()
 
