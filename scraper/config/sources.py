@@ -65,6 +65,50 @@ SOURCES: dict[str, SourceConfig] = {
         base_url="https://api.example-airline-c.com",
         notes="Synthetic source for invalid data testing.",
     ),
+    "site1": SourceConfig(
+        name="site1",
+        has_official_api=True,
+        scraping_permitted=False,
+        base_url="http://localhost:8765", # Local test harness
+        api_docs_url="",
+        terms_url="",
+        access_verified_on="2026-09-27",
+        requests_per_minute=20,
+        notes="SkyFly API - Mock testing source.",
+    ),
+    "site2": SourceConfig(
+        name="site2",
+        has_official_api=True,
+        scraping_permitted=False,
+        base_url="http://localhost:8765", # Local test harness
+        api_docs_url="",
+        terms_url="",
+        access_verified_on="2026-09-27",
+        requests_per_minute=20,
+        notes="AeroNation API - Mock testing source.",
+    ),
+    "site3": SourceConfig(
+        name="site3",
+        has_official_api=False,
+        scraping_permitted=True,
+        base_url="http://localhost:8765/site3-html", # Local test harness
+        terms_url="",
+        robots_url="",
+        access_verified_on="2026-09-27",
+        requests_per_minute=20,
+        notes="JetVista HTML Scraping - Test source.",
+    ),
+    "site4": SourceConfig(
+        name="site4",
+        has_official_api=True,
+        scraping_permitted=False,
+        base_url="http://localhost:8765", # Local test harness
+        api_docs_url="",
+        terms_url="",
+        access_verified_on="2026-09-27",
+        requests_per_minute=15,
+        notes="AirWings XML API - Mock testing source.",
+    ),
 }
 
 

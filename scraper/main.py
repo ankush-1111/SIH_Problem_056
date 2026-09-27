@@ -20,6 +20,10 @@ from scheduler.job_generator import generate_todays_jobs, ScrapeJob
 from sources.mock_api_source import MockAirlineAAdapter
 from sources.mock_api_source_b import MockAirlineBAdapter
 from sources.mock_api_source_c import MockAirlineCAdapter
+from sources.site1_adapter import Site1Adapter
+from sources.site2_adapter import Site2Adapter
+from sources.site3_adapter import Site3Adapter
+from sources.site4_adapter import Site4Adapter
 from core.retry import BlockedError, PermanentSourceError
 from core.validation import is_sane_fare
 from core.logger import get_logger
@@ -40,6 +44,21 @@ ADAPTERS = {
     "airline_c": MockAirlineCAdapter(
         base_url=SOURCES["airline_c"].base_url,
         requests_per_minute=SOURCES["airline_c"].requests_per_minute,
+    ),
+    "site1": Site1Adapter(
+        base_url=SOURCES["site1"].base_url,
+        api_key=os.getenv("SITE1_API_KEY", "TEST_API_KEY_SITE1_123"),
+    ),
+    "site2": Site2Adapter(
+        base_url=SOURCES["site2"].base_url,
+        api_key=os.getenv("SITE2_API_KEY", "TEST_API_KEY_SITE2_456"),
+    ),
+    "site3": Site3Adapter(
+        base_url=SOURCES["site3"].base_url,
+    ),
+    "site4": Site4Adapter(
+        base_url=SOURCES["site4"].base_url,
+        api_key=os.getenv("SITE4_API_KEY", "TEST_API_KEY_SITE4_789"),
     ),
 }
 
