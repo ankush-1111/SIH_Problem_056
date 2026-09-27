@@ -4,8 +4,9 @@ import subprocess
 from datetime import datetime
 
 # Configure Postgres connection
-# The testing environment should have these set, or they fall back to the docker defaults
-os.environ["DATABASE_URL"] = os.getenv("DATABASE_URL", "postgresql://admin:password123@localhost:5432/sih_db")
+# The testing environment should have DATABASE_URL set.
+if not os.getenv("DATABASE_URL"):
+    raise ValueError("DATABASE_URL environment variable must be set")
 os.environ["TEST_MODE"] = "true"
 
 def run_test():

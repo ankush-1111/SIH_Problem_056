@@ -1,5 +1,7 @@
 
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 from index_engine.service import IndexService
 from index_engine.repository import Repository
 from index_engine.calculator import Calculator

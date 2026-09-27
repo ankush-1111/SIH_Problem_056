@@ -8,19 +8,17 @@ from psycopg2.extras import execute_values
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Database connection details
-DB_HOST = "localhost"
-DB_NAME = os.getenv("DB_NAME", "sih_db")
-DB_USER = os.getenv("DB_USER", "admin")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "password123")
+# Database configuration
+# DATABASE_URL = os.getenv("DATABASE_URL")
 
 def get_db_connection():
-    return psycopg2.connect(
-        host=DB_HOST,
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD
-    )
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        raise ValueError("DATABASE_URL environment variable is not set")
+    if db_url.startswith("sqlite"):
+        import sqlite3
+        return sqlite3.connect(db_url.replace("sqlite:///", ""), uri=True)
+    return psycopg2.connect(db_url)
 
 def calculate_median(fares):
     if not fares:
@@ -42,21 +40,27 @@ def run_representative_fare_aggregation():
                 travel_date,
                 advance_days as booking_window,
                 fare_class,
-                ARRAY_AGG(total_fare ORDER BY total_fare) as fare_list,
-                COUNT(*) as obs_count
+                total_fare
             FROM fare_observations
-            WHERE total_fare IS NOT NULL AND total_fare > 0
-            GROUP BY route_id, travel_date, advance_days, fare_class
-            HAVING COUNT(*) >= 2;
+            WHERE total_fare IS NOT NULL AND total_fare > 0;
         """
         cur.execute(query)
-        groups = cur.fetchall()
+        rows = cur.fetchall()
 
+        # Aggregate in Python for database compatibility
+        from collections import defaultdict
+        groups = defaultdict(list)
+        for route_id, travel_date, booking_window, fare_class, total_fare in rows:
+            groups[(route_id, travel_date, booking_window, fare_class)].append(total_fare)
+
+        processed_groups = []
         results = []
-        for route_id, travel_date, booking_window, fare_class, fares, count in groups:
-            median_fare = calculate_median(fares)
-            if median_fare:
-                results.append((route_id, booking_window, travel_date, fare_class, median_fare, count, 'MEDIAN_TOTAL_FARE', 'VALID'))
+        for key, fares in groups.items():
+            if len(fares) >= 2:
+                route_id, travel_date, booking_window, fare_class = key
+                median_fare = calculate_median(fares)
+                if median_fare:
+                    results.append((route_id, booking_window, travel_date, fare_class, float(median_fare), len(fares), 'MEDIAN_TOTAL_FARE', 'VALID'))
 
         # 2. Upsert results into RepresentativeFares
         # Using ON CONFLICT to ensure idempotency
@@ -85,4 +89,6 @@ def run_representative_fare_aggregation():
         conn.close()
 
 if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
     run_representative_fare_aggregation()

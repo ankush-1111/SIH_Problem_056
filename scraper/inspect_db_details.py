@@ -1,14 +1,14 @@
 import psycopg2
 import os
 
+import psycopg2
+import os
+
 try:
-    conn = psycopg2.connect(
-        dbname="sih_db",
-        user="admin",
-        password="password123",
-        host="localhost",
-        port="5432"
-    )
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        raise ValueError("DATABASE_URL must be set")
+    conn = psycopg2.connect(db_url)
     cur = conn.cursor()
     
     # Check tables

@@ -61,7 +61,13 @@ CREATE TABLE IF NOT EXISTS RepresentativeFares (
     route_id INTEGER REFERENCES Routes(id),
     booking_window INTEGER,
     date DATE,
-    median_fare NUMERIC(15, 2)
+    fare_class VARCHAR(50),
+    median_fare NUMERIC(15, 2),
+    observation_count INTEGER,
+    calculation_method VARCHAR(50),
+    status VARCHAR(50),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(route_id, date, booking_window, fare_class)
 );
 
 CREATE TABLE IF NOT EXISTS AirfareIndices (

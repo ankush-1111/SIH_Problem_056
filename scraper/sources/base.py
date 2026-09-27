@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from datetime import date
 
-from models.fare_quote import FareQuote
+from scraper.models.fare_quote import FareQuote
 
 
 class SourceAdapter(ABC):

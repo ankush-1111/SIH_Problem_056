@@ -7,9 +7,9 @@ from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, Numeric, Str
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.exc import NoResultFound
 
-from db.database import Base
-from models.fare_quote import FareQuote
-from core.logger import get_logger
+from scraper.db.database import Base
+from scraper.models.fare_quote import FareQuote
+from scraper.core.logger import get_logger
 
 logger = get_logger("db")
 
