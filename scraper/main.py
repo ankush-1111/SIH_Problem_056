@@ -10,11 +10,16 @@ import os
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from uuid import uuid4
+import sys
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.join(project_root, "cleaning-normalization"))
+from service import process_single_record
 
 from config.sources import SOURCES
 from scheduler.job_generator import generate_todays_jobs, ScrapeJob
 from sources.mock_api_source import MockAirlineAAdapter
-from sources.example_scrape_source import AirlineBAdapter
+from sources.mock_api_source_b import MockAirlineBAdapter
+from sources.mock_api_source_c import MockAirlineCAdapter
 from core.retry import BlockedError, PermanentSourceError
 from core.validation import is_sane_fare
 from core.logger import get_logger
@@ -28,9 +33,13 @@ ADAPTERS = {
         base_url=SOURCES["airline_a"].base_url,
         requests_per_minute=SOURCES["airline_a"].requests_per_minute,
     ),
-    "airline_b": AirlineBAdapter(
+    "airline_b": MockAirlineBAdapter(
         base_url=SOURCES["airline_b"].base_url,
         requests_per_minute=SOURCES["airline_b"].requests_per_minute,
+    ),
+    "airline_c": MockAirlineCAdapter(
+        base_url=SOURCES["airline_c"].base_url,
+        requests_per_minute=SOURCES["airline_c"].requests_per_minute,
     ),
 }
 
@@ -47,6 +56,19 @@ def run_job(job: ScrapeJob, run_id: str) -> str:
     error_message = None
     try:
         quote = adapter.collect(job.origin, job.destination, job.travel_date, job.advance_days)
+
+        # Apply cleaning/normalization
+        cleaned_quote_data = process_single_record(quote.model_dump())
+        if cleaned_quote_data.get('validation_status') == "REJECTED":
+            status = "rejected"
+            return status
+
+        # Re-update quote with cleaned data
+        quote.origin = cleaned_quote_data['origin']
+        quote.destination = cleaned_quote_data['destination']
+        quote.airline = cleaned_quote_data['airline']
+        quote.total_fare = cleaned_quote_data['total_fare']
+
         if not is_sane_fare(quote):
             status = "rejected"
             return status

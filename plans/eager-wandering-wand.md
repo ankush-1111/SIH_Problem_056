@@ -1,30 +1,45 @@
-# Task 1: Unify Database Schema
+# Plan: Task 7 - Full End-to-End Pipeline Verification
 
 ## Context
-The current PostgreSQL setup defines two competing tables for fare observations: `fare_observations` (lowercase) and `FareObservations` (PascalCase), with a trigger on the former to populate the latter. This causes schema drift where the trigger-populated table misses ~9 critical fields, breaking downstream services that expect them. We must consolidate these into one authoritative schema.
+Goal is to verify the entire airfare pipeline works from end-to-end using synthetic data and the mock ingestion path, without real scraping. This will exercise the scraper (mock data), cleaning, database ingestion, representative fare aggregation, index engine (APIx calculation), and the API layer.
 
-## Dependency Map
-fare source
-→ insertion (via app/trigger)
-→ fare_observations (the source of truth)
-→ cleaning
-→ representative fare (service.py)
-→ index engine
+## Implementation Steps
+### 1. Synthetic Data & Pipeline Prep
+- **Modify Configuration for Test**: 
+  - Add `airline_b` as a `scraping_permitted=True` source in `scraper/config/sources.py` (temporarily enabled for synthetic test data).
+  - Update `scraper/main.py` `ADAPTERS` to include a `MockAirlineBAdapter` that returns deterministic fares (different from `airline_a` to enable aggregation) if needed, or simply leverage `MockAirlineAAdapter` by making it configurable. Actually, it's easier to create a `MockAirlineXAdapter` and add it to `main.py` and `SOURCES`.
+- **Synthetic Data Generation**: Create a script `scripts/prepare_test.py` that populates `fare_observations` with a mix of:
+  - 2+ observations per route/window (for aggregation).
+  - 1+ invalid/malformed observation to test `process_single_record()` rejection.
 
-## Proposed Approach
-1. Redefine `FareObservations` (the PascalCase version, which seems to be the one consumers expect) to include ALL critical fields originally in `fare_observations`.
-2. Update the application code (producers) to write directly into the unified table.
-3. Remove the `fare_observations` table entirely and drop the trigger function `trg_ingest_fare_observation`.
-4. Run necessary migrations/updates.
+### 2. Pipeline Execution
+- **Execute Stages**:
+  - Run `scraper/main.py --once`.
+  - Run `representative-fare-engine/service.py` to aggregate representative fares.
+  - Run `index-engine/run_test.py` to calculate APIx.
+  - Run `backend-api/app.py` (or exercise API endpoints using `httpx`).
+
+### 3. Verification & Trace
+- **Pipeline Verification**:
+  - Use SQL tools/scripts to count records at each pipeline stage (Raw -> Cleaned -> Representative -> Index).
+  - Run FastAPI ingestion tests/queries and verify expected APIx outputs.
+- **Fail-Safe Tests**:
+  - Verify invalid record was NOT inserted into `fare_observations` (queried from `job_audits` or database).
+- **Security Regressions**:
+  - Check `DATABASE_URL` sourcing and absence of hardcoded credentials.
+- **Reporting**:
+  - Produce the trace count report as requested.
+  - Final report for the user.
 
 ## Critical Files
-- `database/init.sql` (schema definitions)
-- `representative-fare-engine/service.py` (consumer)
-- `scraper/aggregate.py` (consumer)
-- Scraper ingestion logic (producers)
+- `scraper/config/sources.py`
+- `scraper/main.py`
+- `scraper/db/models.py`
+- `representative-fare-engine/service.py`
+- `index-engine/run_test.py`
+- `backend-api/app.py`
 
 ## Verification
-- Initialize DB from new schema.
-- Insert synthetic record with all fields.
-- Verify read/write through the unified table.
-- Run `representative-fare-engine` tests.
+- Running `run_all.sh` (or executing individual steps sequentially and recording outputs for the report).
+- Validating counts against expected counts based on synthetic data generation.
+- Checking `fare_observations` and `RepresentativeFares` for data normalization completeness.

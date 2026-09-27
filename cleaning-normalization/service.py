@@ -74,3 +74,15 @@ def process_raw_data(df):
         cleaned_records.append(record)
 
     return pd.DataFrame(cleaned_records), pd.DataFrame(rejected_records)
+
+def process_single_record(record: dict) -> dict:
+    """Wraps process_raw_data for single record processing."""
+    df = pd.DataFrame([record])
+    cleaned, rejected = process_raw_data(df)
+
+    if not rejected.empty:
+        # Return rejected record with original status
+        return rejected.iloc[0].to_dict()
+
+    return cleaned.iloc[0].to_dict()
+

@@ -14,7 +14,8 @@ class TestFareEngineIntegration(unittest.TestCase):
         )
         self.cur = self.conn.cursor()
         # Clean state for test
-        self.cur.execute("DELETE FROM RepresentativeFares; DELETE FROM fare_observations;")
+        self.cur.execute("DELETE FROM RepresentativeFares; DELETE FROM fare_observations; DELETE FROM Routes; DELETE FROM Airlines;")
+        self.conn.commit()
 
     def tearDown(self):
         self.cur.close()
@@ -25,10 +26,13 @@ class TestFareEngineIntegration(unittest.TestCase):
         self.cur.execute("""
             INSERT INTO Routes (id, origin, destination) VALUES (999, 'DEL', 'BOM');
             INSERT INTO Airlines (id, name) VALUES (999, 'TestAir');
-            INSERT INTO fare_observations (route_id, airline_id, observation_timestamp, travel_date, advance_days, total_fare, fare_class, source, airline)
-            VALUES (999, 999, '2026-09-01 10:00:00+05:30', '2026-09-10', 7, 5200, 'Economy', 'Test', 'TestAir'),
-                   (999, 999, '2026-09-01 10:00:00+05:30', '2026-09-10', 7, 5800, 'Economy', 'Test', 'TestAir'),
-                   (999, 999, '2026-09-01 10:00:00+05:30', '2026-09-10', 7, 5500, 'Economy', 'Test', 'TestAir');
+            INSERT INTO fare_observations (
+                route_id, airline_id, observation_timestamp, travel_date, advance_days, base_fare, total_fare,
+                fare_class, source, airline, origin, destination, cabin, taxes, other_charges, availability, search_profile
+            )
+            VALUES (999, 999, '2026-09-01 10:00:00+05:30', '2026-09-10', 7, 5000, 5200, 'Economy', 'Test', 'TestAir', 'DEL', 'BOM', 'Economy', 100, 100, 'available', 'one_way_economy_1pax'),
+                   (999, 999, '2026-09-01 10:00:00+05:30', '2026-09-10', 7, 5500, 5800, 'Economy', 'Test', 'TestAir', 'DEL', 'BOM', 'Economy', 100, 200, 'available', 'one_way_economy_1pax'),
+                   (999, 999, '2026-09-01 10:00:00+05:30', '2026-09-10', 7, 5300, 5500, 'Economy', 'Test', 'TestAir', 'DEL', 'BOM', 'Economy', 100, 100, 'available', 'one_way_economy_1pax');
         """)
         self.conn.commit()
 

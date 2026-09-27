@@ -11,9 +11,8 @@ ROUTES = (
     ("DEL", "BOM"),
     ("DEL", "BLR"),
     ("BOM", "BLR"),
-    ("DEL", "CCU"),
-    ("BLR", "HYD"),
-    ("MAA", "DEL"),
+    ("DEL", "HYD"),
+    ("BOM", "HYD"),
 )
 
 

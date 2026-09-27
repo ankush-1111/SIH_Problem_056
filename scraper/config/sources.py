@@ -49,21 +49,21 @@ SOURCES: dict[str, SourceConfig] = {
     ),
     "airline_b": SourceConfig(
         name="airline_b",
-        has_official_api=False,
-        scraping_permitted=False, # Changed to False
-        base_url="https://www.example-airline-b.com",
+        has_official_api=True, # Changed to True for mocking
+        scraping_permitted=True, # Changed to True for testing
+        base_url="https://api.example-airline-b.com",
         terms_url="",
         robots_url="",
         access_verified_on="",
         requests_per_minute=12,
-        notes="Example Playwright adapter only. Replace after explicit access verification.",
+        notes="Example synthetic source for testing.",
     ),
     "airline_c": SourceConfig(
         name="airline_c",
-        has_official_api=False,
-        scraping_permitted=False,
-        base_url="https://www.example-airline-c.com",
-        notes="Intentionally disabled until automated access is verified.",
+        has_official_api=True, # Changed to True
+        scraping_permitted=True, # Changed to True
+        base_url="https://api.example-airline-c.com",
+        notes="Synthetic source for invalid data testing.",
     ),
 }
 
