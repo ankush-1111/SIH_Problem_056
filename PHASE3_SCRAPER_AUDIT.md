@@ -50,3 +50,16 @@ Site 5 is **explicitly excluded** from automation due to its aggressive anti-bot
 - [x] **APIx/Methodology:** No unauthorized changes to core aggregation or indexing logic.
 - [x] **Booking windows:** Canonical T+1/7/15/30/45 windows enforced.
 - [x] **Test Determinism:** Mock API responses ensure deterministic E2E test fixtures.
+
+## 5. Security & Configuration (Task 21)
+- [x] **DATABASE_URL centralization**: All components (scraper, representative-fare-engine, index-engine, backend-api, E2E tests) now use `DATABASE_URL` exclusively.
+- [x] **Hardcoded credentials removed**: Audited for `DB_USER`/`DB_PASSWORD` patterns; none found in active code.
+- [x] **PG/Test Policy**: Integration tests remain PG-dependent for manual validation; supplemental mocked unit tests added for fare engine logic where PG is blocked.
+
+## 6. Pipeline Cleaning/Normalization Integration (Task 22)
+- [x] **Pipeline Verification**: Inspected `scraper.main.run_job` and confirmed `process_single_record` (Cleaning/Normalization) is invoked before `save_fare_quote` (DB Persistence).
+- [x] **Integration Flow**: Verified: Adapter -> Normalized -> Validated -> Staged.
+- [x] **Regression Tests**: Ran E2E PostgreSQL-based tests for Sites 1-4; all passed and verified the normalization/staging path.
+- [x] **Validation Logic**: Confirmed `is_sane_fare` acts as the final gate before database insertion.
+
+
